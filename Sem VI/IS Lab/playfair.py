@@ -16,8 +16,8 @@ def standardize_key(key):
 
 def playfair_matrix(key):
 
-    key = standardize_key(key)
-    alphabet = "ABCDEFGHIJKLMNOPQRTSUVWXYZ"
+    # key = standardize_key(key)
+    alphabet = "ABCDEFGHIKLMNOPQRTSUVWXYZ"  # no J
 
     matrix = []
     for char in key:  # adding std_key to the matrix
@@ -61,14 +61,38 @@ def plaintext_pairs(plaintext):
     return plaintext_paired
 
 
+def encrypt(letter1, letter2, pmatrix):
+    encrypted_pair = ""
+    row1, col1, row2, col2 = -1, -1, -1, -1
+    # Find positions of the two letters
+    for i, row in enumerate(pmatrix):
+        if letter1 in row:
+            row1, col1 = i, row.index(letter1)
+        if letter2 in row:
+            row2, col2 = i, row.index(letter2)
+
+    # Same row
+    if row1 == row2:
+        encrypted_pair = pmatrix[row1][(col1 + 1) % 5] + pmatrix[row2][(col2 + 1) % 5]
+
+    # Same column
+    elif col1 == col2:
+        encrypted_pair = pmatrix[(row1 + 1) % 5][col1] + pmatrix[(row2 + 1) % 5][col2]
+
+    # Rectangle rule
+    else:
+        encrypted_pair = pmatrix[row1][col2] + pmatrix[row2][col1]
+
+    return encrypted_pair
+
+
 # key
 key = input("Enter the  key (e.g., 'KEYWORD'): ")
-# standardized_key = standardize_key(key)
-# print(f"The  key you entered is: {key}")
-print(f"The standardized  is: {key}")
+skey = standardize_key(key)
+print(f"The standardized key  is: {skey}")
 
 # making matrix 5x5
-pmatrix = playfair_matrix(key)
+pmatrix = playfair_matrix(skey)
 
 # print(pmatrix)
 print("The Playfair matrix is:")  # printing the matrix w/o [,]
@@ -82,3 +106,13 @@ plaintext = input("Enter the  plaintext: ")
 # dividing the plaintext into pairs of two letters:
 prepared_text = plaintext_pairs(plaintext)
 print(prepared_text)
+
+# Encrypting the prepared plaintext pairs
+encrypted_text = ""
+for pair in prepared_text:
+    letter1, letter2 = pair[0], pair[1]  # Extract each pair of letters
+    encrypted_text += encrypt(
+        letter1, letter2, pmatrix
+    )  # Encrypt the pair and append to the result
+
+print("The encrypted text is:", encrypted_text)
